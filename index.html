@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="https://code.jquery.com/jquery-2.2.0.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+    <title>Test task</title>
+    <script>
+        $(document).ready(function(){
+
+            $('#languageData').change(function(){
+                var selectedLanguage = $(this).val();
+
+                $.get('index.php/' + selectedLanguage, function(data){
+                    console.log(data);
+                    gdata = data;
+                    drawTableHeader();
+                    processData(data);
+                })
+                .done(function(){
+                    <!--console.log('in done');-->
+                })
+                .fail(function(){
+                    alert('lang ajax error');
+                });
+            });
+
+            $('#showTableData').click(function(){
+                $.get('index.php', function(data){
+                    console.log(data);
+                    gdata = data;
+                    drawTableHeader();
+                    processData(data);
+                })
+                .done(function(){
+                    <!--console.log('in done');-->
+                })
+                .fail(function(){
+                    alert('ajax error');
+                });
+            });
+        });
+
+    function drawTableHeader() {
+        $('#tableData').remove();
+
+        var tableHeader = $('<div class="div-table" id="tableData"><div class="div-table-row"/></div>');
+        $('#form1').append(tableHeader);
+
+        tableHeader.append($('<div class="div-table-col" align="center">ID</div>'));
+        tableHeader.append($('<div class="div-table-col">Image</div>'));
+        tableHeader.append($('<div class="div-table-col">Title</div>'));
+        tableHeader.append($('<div class="div-table-col">Language</div>'));
+        tableHeader.append($('<div class="div-table-col">Status</div>'));
+    }
+
+    function drawTableRow(rowData) {
+        id = rowData.id;
+        titleImage = rowData.content.title.title_image;
+        title = rowData.content.title.title;
+        status = rowData.status;
+        language = rowData.lang;
+        url = rowData.url;
+
+        var row = $('<div class="div-table-row"/>');
+        $('#tableData').append(row);
+        row.append($('<div class="div-table-col">'+ id +'</div>'));
+        row.append($('<div class="div-table-col">'+ '<img src="'+ titleImage +'"/>' +'</div>'));
+        row.append($('<div class="div-table-col">'+ title +'</div>'));
+        row.append($('<div class="div-table-col">'+ language +'</div>'));
+        row.append($('<div class="div-table-col">'+ '<img src="'+ status +'"/>' +'</div>'));
+
+        <!--console.log(status, language, id, titleImage, title, url);-->
+    }
+
+    function processData(data) {
+        for (i = 0; i < data.length; i++) {
+            drawTableRow(data[i]);
+        }
+    }
+    </script>
+
+</head>
+<body>
+    <button id="showTableData">Show table</button>
+
+    <form id="form1">
+        <select id="languageData">
+            <option value="">Select language</option>
+            <option value="en">En</option>
+            <option value="ru">Ru</option>
+            <option value="de">De</option>
+            <option value="es">Es</option>
+        </select>
+    </form>
+
+</body>
+</html>
