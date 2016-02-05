@@ -28,22 +28,20 @@ try {
     ORDER BY date_added DESC
     LIMIT 5";
 
-    if ($stm = $dbh->prepare($query)) {
-        if ($stm->execute(array(':language' => $language))) {
-
-            $resultData = array();
-
-            while ($row = $stm->fetch()) {
-                $row['content'] = json_decode($row['content']);
-                $row['status'] = $statuses[$row['status']];
-                $resultData[] = $row;
-            }
-
-        } else {
-            throw new Exception('error in PDO::execute()');
-        }
-    } else {
+    if (!$stm = $dbh->prepare($query)) {
         throw new Exception('error in PDO::prepare()');
+    }
+
+    if (!$stm->execute(array(':language' => $language))) {
+        throw new Exception('error in PDO::execute()');
+    }
+
+    $resultData = array();
+
+    while ($row = $stm->fetch()) {
+        $row['content'] = json_decode($row['content']);
+        $row['status'] = $statuses[$row['status']];
+        $resultData[] = $row;
     }
 
 } catch (Exception $e) {
