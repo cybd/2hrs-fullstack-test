@@ -17,25 +17,38 @@ $statuses = [
 
 header('Content-type: application/json');
 
-$mysqli = new mysqli("localhost", "root", "root", "hittest");
-if ($mysqli->connect_errno) {
-    echo "Failed to connect to MySQL: (" . $mysqli->connect_errno . ") " . $mysqli->connect_error;
-}
+try {
+    $dbh = new PDO('mysql:host=localhost;dbname=hittest', 'root', 'root');
 
-$query = "SELECT a.id, ad.content, ad.lang, ad.status
-FROM articles a
-INNER JOIN authors au ON a.author_id=au.id
-INNER JOIN articles_data ad ON ad.pid = a.id
-WHERE ad.lang = '$language'
-ORDER BY date_added DESC
-LIMIT 5";
+    $query = "SELECT a.id, ad.content, ad.lang, ad.status
+    FROM articles a
+    INNER JOIN authors au ON a.author_id=au.id
+    INNER JOIN articles_data ad ON ad.pid = a.id
+    WHERE ad.lang = :language
+    ORDER BY date_added DESC
+    LIMIT 5";
 
-$resultData = [];
-$res = $mysqli->query($query);
-while ($row = $res->fetch_assoc()) {
-    $row['content'] = json_decode($row['content']);
-    $row['status'] = $statuses[$row['status']];
-    $resultData[] = $row;
+    if ($stm = $dbh->prepare($query)) {
+        if ($stm->execute(array(':language' => $language))) {
+
+            $resultData = array();
+
+            while ($row = $stm->fetch()) {
+                $row['content'] = json_decode($row['content']);
+                $row['status'] = $statuses[$row['status']];
+                $resultData[] = $row;
+            }
+
+        } else {
+            throw new Exception('error in PDO::execute()');
+        }
+    } else {
+        throw new Exception('error in PDO::prepare()');
+    }
+
+} catch (Exception $e) {
+    print 'Failed to connect to database: '. $e->getMessage();
+    die();
 }
 
 print json_encode($resultData);
